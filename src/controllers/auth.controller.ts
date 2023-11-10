@@ -1,21 +1,17 @@
 import { Request, Response } from 'express';
 import { settings } from '../config/config';
-import { User } from '../models/User';
+import { Admin as User } from '../models/Admin';
 import { generatePassword, comparePassword } from '../utils/passwordGenerator';
 import { generateToken } from '../utils/tokenGenerator';
 
 export async function signUp (req: Request, res: Response) : Promise<unknown> {
-	const { email, firstName, lastName, password, mobileNo, businessName } = req.body;
+	const { email, name, password } = req.body;
 
 	if (!email || email?.trim() == '') {
 		return res.status(400).send({ err: 'Error: Bad request'});
 	}
 
-	if (!firstName || firstName?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request'});
-	}
-
-	if (!lastName || lastName?.trim() == '') {
+	if (!name || name?.trim() == '') {
 		return res.status(400).send({ err: 'Error: Bad request'});
 	}
 
@@ -45,10 +41,7 @@ export async function signUp (req: Request, res: Response) : Promise<unknown> {
 
 	const newUser = new User({
 		email,
-		firstName,
-		lastName,
-		businessName,
-		mobileNo,
+		name,
 	});
 
 	try {
