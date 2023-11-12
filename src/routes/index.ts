@@ -14,8 +14,8 @@ const routes = [{
 	route: '/customers',
 	path: 'customers.routes'
 },{
-	route: '/settings',
-	path: 'settings.routes'
+	route: '/packages',
+	path: 'packages.routes'
 },];
 
 // For each path in the `routes` array, set up the URI and require the route

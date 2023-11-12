@@ -1,6 +1,6 @@
 import { Router } from 'express';
 // import passport from 'passport';
-import * as controllers from '../controllers/settings.controller';
+import * as controllers from '../controllers/packages.controller';
 
 const router = Router();
 
@@ -9,9 +9,19 @@ router.post(
 	controllers.createPackage
 );
 
-router.post(
+router.patch(
 	'/update',
 	controllers.updatePackage
+);
+
+router.get(
+	'/get',
+	controllers.getPackages
+);
+
+router.delete(
+	'/delete/:id',
+	controllers.deletePackage
 );
 
 export default router;
