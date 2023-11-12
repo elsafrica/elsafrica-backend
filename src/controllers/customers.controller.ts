@@ -68,13 +68,17 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function update(req: Request, res: Response): Promise<unknown> {
-	const { id, name, email, phone1, phone2, package: bill, ip, location, } = req.body;
+	const { id, firstName, lastName, email, phone1, phone2, package: bill, ip, location, } = req.body;
 
 	if (!id || id?.trim() == '') {
 		return res.status(400).send({ err: 'Error: Bad request' });
 	}
 	
-	if (!name || name?.trim() == '') {
+	if (!firstName || firstName?.trim() == '') {
+		return res.status(400).send({ err: 'Error: Bad request' });
+	}
+
+	if (!lastName || lastName?.trim() == '') {
 		return res.status(400).send({ err: 'Error: Bad request' });
 	}
 
@@ -105,7 +109,7 @@ export async function update(req: Request, res: Response): Promise<unknown> {
 			return res.status(409).send({ err: 'The user you are trying to updadate doesn\'t exist' });
 		}
 
-		exists.name = name;
+		exists.name = toUpcaseFirstLetter(firstName) + ' ' + toUpcaseFirstLetter(lastName);
 		exists.phone1 = phone1;
 		exists.phone2 = phone2;
 		exists.email = email;
