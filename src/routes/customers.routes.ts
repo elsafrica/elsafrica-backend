@@ -5,7 +5,7 @@ import * as controllers from '../controllers/customers.controller';
 const router = Router();
 
 router.post(
-	'/create',
+	'/new',
 	controllers.create
 );
 
