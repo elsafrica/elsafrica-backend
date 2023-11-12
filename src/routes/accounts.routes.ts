@@ -14,4 +14,9 @@ router.get(
 	controllers.getOverdue
 );
 
+router.get(
+	'/suspended',
+	controllers.getSuspended
+);
+
 export default router;
