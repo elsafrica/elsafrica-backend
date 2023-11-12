@@ -5,6 +5,11 @@ const UserSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	email: {
+		type: String,
+		required: true,
+		unique: true,
+	},
 	phone1: {
 		type: String,
 		required: true,
@@ -32,22 +37,22 @@ const UserSchema = new Schema({
 	},
 	total_earnings: {
 		type: Number,
+		default: 0
 	},
 	status: {
 		type: String,
 		enum: ['Active', 'Due', 'Overdue', 'Suspended'],
 		default: 'Active'
 	},
-	password: String,
 	isDisconnected: Boolean,
 	last_payment: Date,
 	userType: {
 		type: String,
 		enum: ['customer', 'superuser', 'admin'],
 		default: 'customer'
-	}
+	},
 }, {
-	timestamps: true
+	timestamps: true,
 });
 
 export const User = model('User', UserSchema);
