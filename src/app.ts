@@ -3,7 +3,6 @@ import cors from 'cors';
 import passport from 'passport';
 import routes from './routes/index';
 import { passportStatic } from './middlewares/auth';
-import { settings } from './config/config';
 import './db';
 passportStatic(passport);
 
@@ -23,6 +22,4 @@ app.use(cors(corsOptions));
 app.use(passport.initialize());
 app.use('/api', routes);
 
-const PORT = settings.PORT || 9880;
-
-app.listen(PORT, () => console.log(`Application running on port: ${PORT}`));
+export default app;
