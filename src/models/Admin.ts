@@ -10,7 +10,9 @@ const AdminSchema = new Schema({
 		required: true,
 		unique: true,
 	},
+	phoneNo: String,
 	password: String,
+	socketID: String,
 }, {
 	timestamps: true,
 });
