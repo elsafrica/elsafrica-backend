@@ -16,6 +16,9 @@ const routes = [{
 },{
 	route: '/packages',
 	path: 'packages.routes'
+},{
+	route: '/messages',
+	path: 'messages.routes'
 },];
 
 // For each path in the `routes` array, set up the URI and require the route
