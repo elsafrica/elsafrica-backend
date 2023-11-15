@@ -45,14 +45,7 @@ export async function sendMessageToClient(req: Request, res: Response): Promise<
 			return res.status(404).send({ msg: 'User not found or send a valid user id' });
 		}
 
-		const message = `
-			Dear ${user.name},
-			Clear your internet bill today to continue
-			enjoying the service:
-			*Business Number*: 522533
-			*Account Number*: 7568745
-			*Amount*: ${user.bill?.amount}
-			Thank you for staying connected.
+		const message = `Dear ${user.name}, \nClear your internet bill today to continue enjoying the service.\n*Business Number*: 522533\n*Account Number*: 7568745\n*Amount*: ${user.bill?.amount}\nThank you for staying connected.
 		`;
 
 		await sendMessage(admin.phoneNo || '', user.phone1, message);
