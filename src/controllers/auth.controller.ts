@@ -67,7 +67,7 @@ export async function login (req: Request, res: Response) : Promise<unknown> {
 		return res.status(400).send({ err: 'Error: Bad request'});
 	}
 
-	if (!password || email?.trim() == '') {
+	if (!password || password?.trim() == '') {
 		return res.status(400).send({ err: 'Error: Bad request'});
 	}
 
@@ -86,7 +86,12 @@ export async function login (req: Request, res: Response) : Promise<unknown> {
 
 		const token = generateToken(user, settings.secret, '365d');
 
-		return res.status(200).send({ msg: 'Login successful', token, userId: user.id });
+		const userDetails: { email: string, id: string } = {
+			email: user.email,
+			id: user.id,
+		};
+
+		return res.status(200).send({ msg: 'Login successful', token, user: userDetails });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured'});
 	}
