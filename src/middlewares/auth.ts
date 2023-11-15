@@ -1,4 +1,4 @@
-import { User } from '../models/User';
+import { Admin as User } from '../models/Admin';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { JWTPAYLOAD, Options } from '../types/auth';
 import { PassportStatic } from 'passport';
