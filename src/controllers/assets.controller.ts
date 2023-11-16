@@ -1,25 +1,15 @@
 import { Request, Response } from 'express';
 import { Asset } from '../models/Assets';
 import { User } from '../models/User';
+import { validationResult } from 'express-validator';
 
 export async function createAsset(req: Request, res: Response): Promise<unknown> {
-	const { name, macAddress, location, belongsTo } = req.body;
-
-	if (!name || name?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
+	const result = validationResult(req);
+	if (!result.isEmpty()) {
+		return res.status(400).send({ err: 'Error: Bad request', errors: result.array() });
 	}
 
-	if (!macAddress || macAddress?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!location || location?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!belongsTo || belongsTo?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
+	const { macAddress, belongsTo } = req.body;
 
 	try {
 		const exists = await Asset.findOne({ mac_address: macAddress });
@@ -28,7 +18,7 @@ export async function createAsset(req: Request, res: Response): Promise<unknown>
 		});
 
 		if (exists) {
-			return res.status(409).send({ err: `An asset using mac address ${macAddress} has already been registered.` });
+			return res.status(409).send({ err: `An asset using MAC address ${macAddress} has already been registered.` });
 		}
 
 		if (!userExists) {
@@ -48,6 +38,11 @@ export async function createAsset(req: Request, res: Response): Promise<unknown>
 }
 
 export async function getAssets(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if (!result.isEmpty()) {
+		return res.status(400).send({ err: 'Error: Bad request', errors: result.array() });
+	}
+
 	const { pageNum = 0, rowsPerPage = 10 } = req.query;
 
 	try {
@@ -63,6 +58,11 @@ export async function getAssets(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function deleteAsset(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if (!result.isEmpty()) {
+		return res.status(400).send({ err: 'Error: Bad request', errors: result.array() });
+	}
+
 	const { id } = req.params;
 
 	if (!id || id?.trim() == '') {

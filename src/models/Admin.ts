@@ -13,6 +13,11 @@ const AdminSchema = new Schema({
 	phoneNo: String,
 	password: String,
 	socketID: String,
+	userType: {
+		type: String,
+		enum: ['user', 'super'],
+		default: 'user'
+	}
 }, {
 	timestamps: true,
 });

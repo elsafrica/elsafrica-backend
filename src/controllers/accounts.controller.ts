@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
 import moment from 'moment';
+import { validationResult } from 'express-validator';
 
 export async function getDue(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { pageNum = 0, rowsPerPage = 10 } = req.query;
 
 	try {
@@ -22,6 +28,11 @@ export async function getDue(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function getOverdue(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { pageNum = 0, rowsPerPage = 10 } = req.query;
  
 	try {
@@ -41,6 +52,11 @@ export async function getOverdue(req: Request, res: Response): Promise<unknown> 
 }
 
 export async function getSuspended(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { pageNum = 0, rowsPerPage = 10 } = req.query;
  
 	try {

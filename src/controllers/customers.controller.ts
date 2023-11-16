@@ -3,37 +3,15 @@ import { Package } from '../models/Packages';
 import { User } from '../models/User';
 import { sendEmail } from '../utils/mail';
 import { toUpcaseFirstLetter } from '../utils/universal';
+import { validationResult } from 'express-validator';
 
 export async function create(req: Request, res: Response): Promise<unknown> {
-	const { firstName, lastName, email, phone1, package: bill, ip, location, } = req.body;
-
-	if (!firstName || firstName?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	if (!lastName || lastName?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!email || email?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!phone1 || phone1?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!bill || bill?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!ip || ip?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!location || location?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
+	const { firstName, lastName, email, package: bill, customAmount } = req.body;
 
 	try {
 		const exists = await User.findOne({ email });
@@ -50,14 +28,25 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 
 	try {
 		const userBill = await Package.findOne({ name: bill });
-		newUser.bill = {
-			package: userBill?.name || '',
-			amount: userBill?.amount || '',
-		};
+
+		if(bill?.toLowerCase() === 'custom') {
+			newUser.bill = {
+				package: 'Custom',
+				amount: customAmount,
+			};
+
+			newUser.total_earnings = Number(customAmount);
+		} else {
+			newUser.bill = {
+				package: userBill?.name || '',
+				amount: userBill?.amount || '',
+			};
+
+			newUser.total_earnings = Number(userBill?.amount);
+		}
 
 		newUser.last_payment = new Date();
 		newUser.isDisconnected = false;
-		newUser.total_earnings = Number(userBill?.amount);
 
 		await newUser.save();
 
@@ -68,45 +57,18 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function update(req: Request, res: Response): Promise<unknown> {
-	const { id, firstName, lastName, email, phone1, phone2, package: bill, ip, location, } = req.body;
-
-	if (!id || id?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-	
-	if (!firstName || firstName?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	if (!lastName || lastName?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!email || email?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!phone1 || phone1?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!bill || bill?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!ip || ip?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!location || location?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
+	const { id, firstName, lastName, email, phone1, phone2, package: bill, ip, location, customAmount } = req.body;
 
 	try {
 		const exists = await User.findById(id);
 
 		if (!exists) {
-			return res.status(409).send({ err: 'The user you are trying to updadate doesn\'t exist' });
+			return res.status(409).send({ err: 'The user you are trying to update doesn\'t exist' });
 		}
 
 		exists.name = toUpcaseFirstLetter(firstName) + ' ' + toUpcaseFirstLetter(lastName);
@@ -117,10 +79,18 @@ export async function update(req: Request, res: Response): Promise<unknown> {
 		exists.ip = ip;
 
 		const userBill = await Package.findOne({ name: bill });
-		exists.bill = {
-			package: userBill?.name || '',
-			amount: userBill?.amount || '',
-		};
+
+		if(bill?.toLowerCase() === 'custom') {
+			exists.bill = {
+				package: 'Custom',
+				amount: customAmount,
+			};
+		} else {
+			exists.bill = {
+				package: userBill?.name || '',
+				amount: userBill?.amount || '',
+			};
+		}
 
 		await exists.save();
 		return res.status(201).send({ msg: 'Customer has been successfully updated.' });
@@ -130,6 +100,11 @@ export async function update(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function acceptPayment(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { id } = req.body;
 
 	try {
@@ -152,6 +127,11 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 }
 
 export async function activate(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { id, deactivate } = req.body;
 
 	try {
@@ -211,6 +191,11 @@ export async function sendMail(req: Request, res: Response): Promise<unknown> {
 }
 
 export async function getCustomers(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { pageNum = 0, rowsPerPage = 10 } = req.query;
 
 	try {
