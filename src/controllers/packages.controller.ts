@@ -1,16 +1,14 @@
 import { Request, Response } from 'express';
 import { Package } from '../models/Packages';
+import { validationResult } from 'express-validator';
 
 export async function createPackage(req: Request, res: Response): Promise<unknown> {
-	const { name, amount } = req.body;
-
-	if (!name || name?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	if (!amount || amount?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
+	const { name } = req.body;
 
 	try {
 		const exists = await Package.findOne({ name });
@@ -34,19 +32,12 @@ export async function createPackage(req: Request, res: Response): Promise<unknow
 }
 
 export async function updatePackage(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { id, name, amount } = req.body;
-
-	if (!id || id?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!name || name?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
-
-	if (!amount || amount?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
 
 	try {
 		const exists = await Package.findById(id);
@@ -77,11 +68,12 @@ export async function getPackages(req: Request, res: Response): Promise<unknown>
 }
 
 export async function deletePackage(req: Request, res: Response): Promise<unknown> {
-	const { id } = req.params;
-
-	if (!id || id?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
+
+	const { id } = req.params;
 
 	try {
 		const exists = await Package.findById(id);

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { initializeCilent, sendMessage } from '../functions/whatsappweb';
 import { Admin } from '../models/Admin';
 import { User } from '../models/User';
+import { validationResult } from 'express-validator';
 
 export async function requestCilentInit(req: Request, res: Response): Promise<unknown> {
 	const { id } = req.user as { id: string };
@@ -26,12 +27,13 @@ export async function requestCilentInit(req: Request, res: Response): Promise<un
 }
 
 export async function sendMessageToClient(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
 	const { id } = req.user as { id: string };
 	const { id: userID } = req.body;
-
-	if (!id || id?.trim() == '') {
-		return res.status(400).send({ err: 'Error: Bad request' });
-	}
 
 	try {
 		const admin = await Admin.findById(id);
