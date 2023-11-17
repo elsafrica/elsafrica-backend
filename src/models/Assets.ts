@@ -7,13 +7,29 @@ const AssetSchema = new Schema({
 	},
 	mac_address: {
 		type: String,
-		required: true,
 		unique: true,
+		partialFilterExpression: { 
+			mac_address: { 
+				$type: 'string' 
+			} 
+		},
 	},
 	belongs_to: {
 		type: Types.ObjectId,
 		required: true,
 		ref: 'User'
+	},
+	assetType: {
+		type: String,
+		required: true
+	},
+	assetPrice: {
+		type: String,
+		required: true
+	},
+	isForCompany: {
+		type: Boolean,
+		required: true,
 	},
 	location: String,
 	purpose: String,
