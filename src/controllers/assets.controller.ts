@@ -17,7 +17,7 @@ export async function createAsset(req: Request, res: Response): Promise<unknown>
 			ip: belongsTo
 		});
 
-		if (exists) {
+		if (exists && macAddress) {
 			return res.status(409).send({ err: `An asset using MAC address ${macAddress} has already been registered.` });
 		}
 
@@ -51,7 +51,15 @@ export async function getAssets(req: Request, res: Response): Promise<unknown> {
 			.populate('belongs_to')
 			.skip(Number(pageNum) * Number(rowsPerPage));
 
-		return res.status(200).send({ assets });
+		const investments = await Asset
+			.find({
+				isForCompany: true,
+			})
+			.select('assetPrice');
+
+		const sumInvestments = investments.reduce((prev, curr) => Number(prev) + Number(curr.assetPrice), 0);
+
+		return res.status(200).send({ assets, totalInvestment: sumInvestments });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
