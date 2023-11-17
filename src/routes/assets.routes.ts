@@ -11,12 +11,20 @@ router.post(
 		body('name')
 			.notEmpty(),
 		body('macAddress')
+			.if(body('assetType').toLowerCase().equals('other'))
 			.notEmpty()
 			.custom((value: string) => /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(value)),
 		body('belongsTo')
 			.notEmpty(),
 		body('location')
 			.notEmpty(),
+		body('assetType')
+			.notEmpty(),
+		body('assetPrice')
+			.notEmpty(),
+		body('isForCompany')
+			.notEmpty()
+			.customSanitizer((value: string) => value.toLowerCase() === 'yes'),
 	],
 	passport.authenticate('jwt', { session: false }),
 	controllers.createAsset
