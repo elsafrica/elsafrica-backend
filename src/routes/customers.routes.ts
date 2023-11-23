@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import * as controllers from '../controllers/customers.controller';
 import { body, query } from 'express-validator';
+import { csvUploads } from '../middlewares/multer';
 
 const router = Router();
 
@@ -88,6 +89,13 @@ router.get(
 		.isNumeric({ no_symbols: true }),
 	passport.authenticate('jwt', { session: false }),
 	controllers.getCustomers
+);
+
+router.post(
+	'/upload_csv',
+	passport.authenticate('jwt', { session: false }),
+	csvUploads.single('file'),
+	controllers.populateDBWithCSV
 );
 
 export default router;
