@@ -4,6 +4,24 @@ import { User } from '../models/User';
 import { sendEmail } from '../utils/mail';
 import { toUpcaseFirstLetter } from '../utils/universal';
 import { validationResult } from 'express-validator';
+import csv from 'csv-parser';
+import fs from 'fs';
+import moment from 'moment';
+
+type Result = {
+	'Customer Name': string,
+	Location: string,
+	Contact: string,
+	Contact2?: string,
+	Email?: string,
+	IP: string,
+	Date: Date,
+	Link: string,
+	'Bill Amount': string,
+	'Cumulative Balances': string,
+	Detail: string,
+	'Last Payment': string;
+}
 
 export async function create(req: Request, res: Response): Promise<unknown> {
 	const result = validationResult(req);
@@ -181,8 +199,7 @@ export async function sendMail(req: Request, res: Response): Promise<unknown> {
 			`
 		};
 
-		await sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
-
+		await sendEmail(mailOptions.to || '', mailOptions.subject, mailOptions.html);
 
 		return res.status(201).send({ msg: `E-mail has successfully been sent to recipient: ${exists.email} of IP: ${exists.ip}` });
 	} catch (error) {
@@ -204,6 +221,43 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 			.skip(Number(pageNum) * Number(rowsPerPage));
 
 		return res.status(200).send({ users });
+	} catch (error) {
+		return res.status(500).send({ err: 'Error: An internal server error has occured' });
+	}
+}
+
+export async function populateDBWithCSV(req: Request, res: Response): Promise<unknown> {
+	const file = req.file;
+	const results: Result[] = [];
+
+	
+	try {
+		fs.createReadStream(file?.path || '')
+			.pipe(csv())
+			.on('data', (data) => results.push(data))
+			.on('end', () => {
+				results.forEach(async (result: Result) => {
+					const user = new User({
+						name: result['Customer Name'],
+						email: result?.Email,
+						phone1: result?.Contact,
+						phone2: result?.Contact2,
+						location: result?.Location,
+						ip: result?.IP?.substring(1),
+						bill: {
+							package: 'Custom',
+							amount: result['Bill Amount'].split(' ')[1]
+						},
+						total_earnings: Number(result['Cumulative Balances'].split(' ')[1]) || 0,
+						isDisconnected: false,
+						last_payment: moment(result['Last Payment'], 'MM/DD/YY'),
+					});
+		
+					await user.save();
+				});
+			});
+		
+		return res.status(200).send({ msg: 'Database has been populated successfully.' });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
