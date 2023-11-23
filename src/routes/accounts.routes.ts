@@ -24,7 +24,6 @@ router.get(
 router.get(
 	'/suspended',
 	query(['rowsPerPage', 'pageNum'])
-		.isEmpty()
 		.isNumeric({ no_symbols: true }),
 	passport.authenticate('jwt', { session: false }),
 	controllers.getSuspended
