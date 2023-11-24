@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+//TODO: Add notes field
 
 const UserSchema = new Schema({
 	name: {
@@ -7,8 +8,6 @@ const UserSchema = new Schema({
 	},
 	email: {
 		type: String,
-		required: true,
-		unique: true,
 	},
 	phone1: {
 		type: String,
@@ -50,6 +49,10 @@ const UserSchema = new Schema({
 		type: String,
 		enum: ['customer', 'superuser', 'admin'],
 		default: 'customer'
+	},
+	accrued_amount: {
+		type: Number,
+		default: 0,
 	},
 }, {
 	timestamps: true,
