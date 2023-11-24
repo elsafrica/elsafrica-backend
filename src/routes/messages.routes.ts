@@ -13,7 +13,7 @@ router.get(
 
 router.post(
 	'/send_message',
-	body('idd')
+	body('id')
 		.notEmpty()
 		.isMongoId(),
 	passport.authenticate('jwt', { session: false }),

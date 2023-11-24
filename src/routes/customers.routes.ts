@@ -76,6 +76,28 @@ router.patch(
 	passport.authenticate('jwt', { session: false }),
 	controllers.acceptPayment
 );
+
+router.patch(
+	'/accrue_payment',
+	body('id')
+		.notEmpty()
+		.isMongoId(),
+	passport.authenticate('jwt', { session: false }),
+	controllers.accruePayment
+);
+
+router.patch(
+	'/deduct_accrued_debt',
+	[
+		body('id')
+			.notEmpty()
+			.isMongoId(),
+		body('amount')
+			.isNumeric({ no_symbols: true })
+	],
+	passport.authenticate('jwt', { session: false }),
+	controllers.deductAccruedDebt
+);
 	
 router.get(
 	'/send_mail/:id',

@@ -29,4 +29,12 @@ router.get(
 	controllers.getSuspended
 );
 
+router.get(
+	'/accrued',
+	query(['rowsPerPage', 'pageNum'])
+		.isNumeric({ no_symbols: true }),
+	passport.authenticate('jwt', { session: false }),
+	controllers.getAccrued
+);
+
 export default router;
