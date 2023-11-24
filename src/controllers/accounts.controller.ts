@@ -69,3 +69,24 @@ export async function getSuspended(req: Request, res: Response): Promise<unknown
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
 }
+
+export async function getAccrued(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { pageNum = 0, rowsPerPage = 10 } = req.query;
+ 
+	try {
+		const users = await User
+			.find({ accrued_amount: {
+				$gt: 0
+			} })
+			.skip(Number(pageNum) * Number(rowsPerPage));
+
+		return res.status(201).send({ users });
+	} catch (error) {
+		return res.status(500).send({ err: 'Error: An internal server error has occured' });
+	}
+}
