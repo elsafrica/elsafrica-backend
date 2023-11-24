@@ -7,6 +7,8 @@ import { validationResult } from 'express-validator';
 import csv from 'csv-parser';
 import fs from 'fs';
 import moment from 'moment';
+import { Admin } from '../models/Admin';
+import { sendMessage } from '../functions/whatsappweb';
 
 type Result = {
 	'Customer Name': string,
@@ -124,21 +126,88 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 	}
 
 	const { id } = req.body;
+	const { id: adminID } = req.user as { id: string };
+
+	try {
+		const user = await User.findById(id);
+		const admin = await Admin.findById(adminID);
+
+		if (!user) {
+			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
+		}
+
+		user.last_payment = new Date();
+		const new_amt = Number(user.total_earnings) + (Number(user.bill?.amount.replace(',', '')) || 0);
+		user.total_earnings = new_amt;
+
+		await user.save();
+
+		const message = `Dear ${user.name}, \nThank you for making you internet bill payment.\nThank you for staying connected.
+		`;
+
+		await sendMessage(admin?.phoneNo || '', user.phone1, message);
+
+		return res.status(201).send({ msg: 'Customer payment has been accepted.' });
+	} catch (error) {
+		return res.status(500).send({ err: 'Error: An internal server error has occured' });
+	}
+}
+
+export async function accruePayment(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { id } = req.body;
+	const { id: adminId } = req.user as { id: string };
+
+	try {
+		const user = await User.findById(id);
+		const admin = await Admin.findById(adminId);
+
+		if (!user) {
+			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
+		}
+
+		user.last_payment = new Date();
+		const new_amt = Number(user.accrued_amount) + (Number(user.bill?.amount.replace(',', '')) || 0);
+		user.accrued_amount = new_amt;
+
+		await user.save();
+
+		const message = `Dear ${user.name}, \nThank you for making you internet bill payment. \n Your outstanding bill is now ${user.accrued_amount}. \n*Business Number*: 522533\n*Account Number*: 7568745\n*Amount*: ${user.bill?.amount}\nThank you for staying connected.
+		`;
+
+		await sendMessage(admin?.phoneNo || '', user.phone1, message);
+
+		return res.status(201).send({ msg: 'Customer payment has been accrued.' });
+	} catch (error) {
+		return res.status(500).send({ err: 'Error: An internal server error has occured' });
+	}
+}
+
+export async function deductAccruedDebt(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { id, amount } = req.body;
 
 	try {
 		const exists = await User.findById(id);
 
 		if (!exists) {
-			return res.status(409).send({ err: 'The customer you are trying to updadate doesn\'t exist' });
+			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
 		}
 
-		exists.last_payment = new Date();
-		const new_amt = Number(exists.total_earnings) + (Number(exists.bill?.amount) || 0);
-		exists.total_earnings = new_amt;
+		const new_amt = Number(exists.accrued_amount) - Number(amount);
+		exists.accrued_amount = Number(amount) > 0 ? new_amt : 0;
 
 		await exists.save();
 
-		return res.status(201).send({ msg: 'Customer payment has been accepted.' });
+		return res.status(201).send({ msg: 'Customer payment has been updated.' });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
@@ -230,7 +299,6 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 	const file = req.file;
 	const results: Result[] = [];
 
-	
 	try {
 		fs.createReadStream(file?.path || '')
 			.pipe(csv())
