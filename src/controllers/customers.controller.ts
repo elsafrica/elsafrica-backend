@@ -309,7 +309,7 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 					const user = new User({
 						name: result['Customer Name'],
 						email: result?.Email,
-						phone1: result?.Contact,
+						phone1: '+254' + result?.Contact,
 						phone2: result?.Contact2,
 						location: result?.Location,
 						ip: result?.IP?.substring(1),
