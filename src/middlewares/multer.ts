@@ -4,11 +4,11 @@ import fs from 'fs';
 
 const storage = diskStorage({
 	destination: function (req, file, cb) {
-		fs.stat(`${__dirname.slice(0, __dirname.length - 11)}/tmp/my-uploads`, (err, stat) => {
+		fs.stat(`${__dirname.slice(0, __dirname.length - 15)}/tmp/my-uploads`, (err, stat) => {
 			if(err) {
-				fs.mkdirSync(`${__dirname.slice(0, __dirname.length - 11)}/tmp/my-uploads`, { recursive: true });
+				fs.mkdirSync(`${__dirname.slice(0, __dirname.length - 15)}/tmp/my-uploads`, { recursive: true });
 			} else if(stat.isDirectory()) {
-				cb(null, `${__dirname.slice(0, __dirname.length - 11)}/tmp/my-uploads`);
+				cb(null, `${__dirname.slice(0, __dirname.length - 15)}/tmp/my-uploads`);
 			}
 		});
 	},
