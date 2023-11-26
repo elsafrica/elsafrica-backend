@@ -21,6 +21,7 @@ export const initializeCilent = async (phoneNo: string, socketID: string) => {
 		await client.initialize();
 		clientSessionStore[phoneNo] = client;
 	} catch (error) {
+		console.log(error);
 		throw new Error(JSON.stringify(error));
 	}
 };
