@@ -22,7 +22,8 @@ export async function requestCilentInit(req: Request, res: Response): Promise<un
 
 		await initializeCilent(admin.phoneNo || '', admin.socketID || '');
 	} catch (error) {
-		return res.status(500).send({ err: 'Error: An internal server error has occured or a WhatsApp client has not been initialized. Please request a new QR code then retry sending the message.' });
+		console.log(error);
+		// return res.status(500).send({ err: 'Error: An internal server error has occured or a WhatsApp client has not been initialized. Please request a new QR code then retry sending the message.' });
 	}
 }
 
