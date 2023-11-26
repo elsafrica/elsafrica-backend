@@ -9,9 +9,9 @@ passportStatic(passport);
 const app = express();
 
 const corsOptions = {
-	origin: '*',
+	origin: ['*', 'https://elsafricaltd.vercel.app'],
 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-	redentials: true,
+	credentials: true,
 };
 
 app.set('trust proxy', 1);
