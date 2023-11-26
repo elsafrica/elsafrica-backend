@@ -23,6 +23,7 @@ type Result = {
 	'Cumulative Balances': string,
 	Detail: string,
 	'Last Payment': string;
+	'Total Earning': string;
 }
 
 export async function create(req: Request, res: Response): Promise<unknown> {
@@ -316,9 +317,10 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 							package: 'Custom',
 							amount: result['Bill Amount'].split(' ')[1]
 						},
-						total_earnings: Number(result['Cumulative Balances'].split(' ')[1]) || 0,
+						total_earnings: Number(result['Total Earning'].split(' ')[1].replace(',', '')) || 0,
+						accrued_amount: Number(result['Cumulative Balances'].split(' ')[1].replace(',', '')) || 0,
 						isDisconnected: false,
-						last_payment: moment(result['Last Payment'], 'MM/DD/YY'),
+						last_payment: moment(result['Last Payment'], 'DD/MM/YY'),
 					});
 		
 					await user.save();
