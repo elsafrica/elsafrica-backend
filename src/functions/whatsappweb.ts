@@ -1,4 +1,3 @@
-import qrcodeterminal from 'qrcode-terminal';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 import { sendQRCode } from './socket';
 interface ClientsMap {
@@ -15,7 +14,6 @@ export const initializeCilent = async (phoneNo: string, socketID: string) => {
 	});
 
 	client.on('qr', (qr) => {
-		qrcodeterminal.generate(qr, { small: true });
 		sendQRCode(socketID, qr);
 	});
 
