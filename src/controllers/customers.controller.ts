@@ -306,29 +306,24 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 			.on('data', (data) => results.push(data))
 			.on('end', () => {
 				results.forEach(async (result: Result) => {
-					try {
-
-						const user = new User({
-							name: result['Customer Name'],
-							email: result?.Email,
-							phone1: result?.Contact,
-							phone2: result?.Contact2,
-							location: result?.Location,
-							ip: result?.IP?.substring(1),
-							bill: {
-								package: 'Custom',
-								amount: result['Bill Amount'].split(' ')[1]
-							},
-							total_earnings: Number(result['Total Earning']?.split(' ')[1]?.replace(',', '')) || 0,
-							accrued_amount: Number(result['Cumulative Balances']?.split(' ')[1]?.replace(',', '')) || 0,
-							isDisconnected: false,
-							last_payment: moment(result['Last Payment'], 'DD/MM/YY') || moment(),
-						});
-			
-						await user.save();
-					} catch (error) {
-						throw new Error('An error has occured while uploading please contact admin.');
-					}
+					const user = new User({
+						name: result['Customer Name'],
+						email: result?.Email,
+						phone1: result?.Contact,
+						phone2: result?.Contact2,
+						location: result?.Location,
+						ip: result?.IP?.substring(1),
+						bill: {
+							package: 'Custom',
+							amount: result['Bill Amount'].split(' ')[1]
+						},
+						total_earnings: Number(result['Total Earning']?.split(' ')[1]?.replace(',', '')) || 0,
+						accrued_amount: Number(result['Cumulative Balances']?.split(' ')[1]?.replace(',', '')) || 0,
+						isDisconnected: false,
+						last_payment: moment(result['Last Payment'], 'DD/MM/YY') || moment,
+					});
+		
+					await user.save();
 				});
 			});
 		
