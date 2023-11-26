@@ -320,7 +320,7 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 						total_earnings: Number(result['Total Earning']?.split(' ')[1]?.replace(',', '')) || 0,
 						accrued_amount: Number(result['Cumulative Balances']?.split(' ')[1]?.replace(',', '')) || 0,
 						isDisconnected: false,
-						last_payment: moment(result['Last Payment'], 'DD/MM/YYYY').isValid() ? moment(result['Last Payment'], 'DD/MM/YY') : moment(),
+						last_payment: moment(result['Last Payment'], 'DD/MM/YYYY').isValid() ? moment(result['Last Payment'], 'DD/MM/YYYY') : moment(),
 					});
 		
 					await user.save();
