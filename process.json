@@ -1,7 +1,7 @@
 {
   "script": "bin/www",
   "watch": true,
-  "ignore_watch": ["tmp/my-uploads"],
+  "ignore_watch": ["middlewares/tmp/my-uploads"],
   "watch_options": {
       "followSymlinks": false
   },
