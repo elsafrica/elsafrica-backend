@@ -288,7 +288,8 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 	try {
 		const users = await User
 			.find({ userType: 'customer' })
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 
 		return res.status(200).send({ users });
 	} catch (error) {

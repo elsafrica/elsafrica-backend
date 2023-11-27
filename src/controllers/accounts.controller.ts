@@ -20,7 +20,8 @@ export async function getDue(req: Request, res: Response): Promise<unknown> {
 				},
 				isDisconnected: false,
 			})
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 		return res.status(201).send({ users });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
@@ -43,7 +44,8 @@ export async function getOverdue(req: Request, res: Response): Promise<unknown> 
 				},
 				isDisconnected: false,
 			})
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 
 		return res.status(201).send({ users });
 	} catch (error) {
@@ -62,7 +64,8 @@ export async function getSuspended(req: Request, res: Response): Promise<unknown
 	try {
 		const users = await User
 			.find({ isDisconnected: true })
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 
 		return res.status(201).send({ users });
 	} catch (error) {
@@ -83,7 +86,8 @@ export async function getAccrued(req: Request, res: Response): Promise<unknown> 
 			.find({ accrued_amount: {
 				$gt: 0
 			} })
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 
 		return res.status(201).send({ users });
 	} catch (error) {

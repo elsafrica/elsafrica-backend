@@ -49,7 +49,8 @@ export async function getAssets(req: Request, res: Response): Promise<unknown> {
 		const assets = await Asset
 			.find({})
 			.populate('belongs_to')
-			.skip(Number(pageNum) * Number(rowsPerPage));
+			.skip(Number(pageNum) * Number(rowsPerPage))
+			.limit(Number(rowsPerPage));
 
 		const investments = await Asset
 			.find({
