@@ -11,6 +11,10 @@ export const initializeCilent = async (phoneNo: string, socketID: string) => {
 			clientId: phoneNo,
 		}),
 		qrMaxRetries: 5,
+		puppeteer: {
+			headless: true,
+			args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions']
+		}
 	});
 
 	client.on('qr', (qr) => {
