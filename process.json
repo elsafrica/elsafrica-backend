@@ -1,0 +1,9 @@
+{
+  "script": "bin/www",
+  "watch": true,
+  "ignore_watch": ["tmp/my-uploads"],
+  "watch_options": {
+      "followSymlinks": false
+  },
+  "name": "index"
+}
