@@ -291,7 +291,10 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
-		return res.status(200).send({ users });
+		const userCount = await User
+			.countDocuments();
+
+		return res.status(200).send({ users, dataLength: userCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
@@ -316,7 +319,7 @@ export async function populateDBWithCSV(req: Request, res: Response): Promise<un
 						ip: result?.IP?.substring(1),
 						bill: {
 							package: 'Custom',
-							amount: result['Bill Amount'].split(' ')[1]
+							amount: Number(result['Bill Amount'].split(' ')[1]?.replace(',', ''))
 						},
 						total_earnings: Number(result['Total Earning']?.split(' ')[1]?.replace(',', '')) || 0,
 						accrued_amount: Number(result['Cumulative Balances']?.split(' ')[1]?.replace(',', '')) || 0,

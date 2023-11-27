@@ -61,7 +61,10 @@ export async function getPackages(req: Request, res: Response): Promise<unknown>
 	try {
 		const packages = await Package.find({});
 
-		return res.status(200).send({ packages });
+		const packageCount = await Package
+			.countDocuments();
+
+		return res.status(200).send({ packages, dataLength: packageCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}

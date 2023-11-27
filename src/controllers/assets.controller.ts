@@ -58,9 +58,12 @@ export async function getAssets(req: Request, res: Response): Promise<unknown> {
 			})
 			.select('assetPrice');
 
+		const assetCount = await Asset
+			.countDocuments();
+
 		const sumInvestments = investments.reduce((prev, curr) => Number(prev) + Number(curr.assetPrice), 0);
 
-		return res.status(200).send({ assets, totalInvestment: sumInvestments });
+		return res.status(200).send({ assets, totalInvestment: sumInvestments, dataLength: assetCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}

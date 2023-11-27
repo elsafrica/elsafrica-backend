@@ -22,7 +22,17 @@ export async function getDue(req: Request, res: Response): Promise<unknown> {
 			})
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
-		return res.status(201).send({ users });
+
+		const userCount = await User
+			.countDocuments({ 
+				last_payment: {
+					$lte: moment(new Date()).subtract(30, 'days').toISOString(),
+					$gte: moment(new Date()).subtract(35, 'days').toISOString()
+				},
+				isDisconnected: false,
+			});
+		
+		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
@@ -47,7 +57,15 @@ export async function getOverdue(req: Request, res: Response): Promise<unknown> 
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
-		return res.status(201).send({ users });
+		const userCount = await User
+			.countDocuments({ 
+				last_payment: {
+					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
+				},
+				isDisconnected: false,
+			});
+
+		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
@@ -67,7 +85,10 @@ export async function getSuspended(req: Request, res: Response): Promise<unknown
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
-		return res.status(201).send({ users });
+		const userCount = await User
+			.countDocuments({ isDisconnected: true });
+
+		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
@@ -89,7 +110,12 @@ export async function getAccrued(req: Request, res: Response): Promise<unknown> 
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
-		return res.status(201).send({ users });
+		const userCount = await User
+			.countDocuments({ accrued_amount: {
+				$gt: 0
+			} });
+
+		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
