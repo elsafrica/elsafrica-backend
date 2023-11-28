@@ -10,6 +10,7 @@ export interface User extends Document{
   status?: string;
   isDisconnected?: boolean | null;
   last_payment?: Date | null;
+	accrued_amount?: number;
   bill?: {
 		package: string,
 		amount: string
