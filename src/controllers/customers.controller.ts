@@ -137,14 +137,13 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
 		}
 
-		user.last_payment = new Date();
 		const new_amt = Number(user.total_earnings) + (Number(user.bill?.amount.replace(',', '')) || 0);
 		user.total_earnings = new_amt;
 
 		await user.save();
 
-		const message = `Dear ${user.name}, \nThank you for making you internet bill payment.\nThank you for staying connected.
-		`;
+		const message = 
+		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\n\nElsafrica!`;
 
 		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
@@ -177,8 +176,7 @@ export async function accruePayment(req: Request, res: Response): Promise<unknow
 
 		await user.save();
 
-		const message = `Dear ${user.name}, \nThank you for making you internet bill payment. \n Your outstanding bill is now ${user.accrued_amount}. \n*Business Number*: 522533\n*Account Number*: 7568745\n*Amount*: ${user.bill?.amount}\nThank you for staying connected.
-		`;
+		const message = `Dear ${user.name},\n\nYour outstanding balance of ${user.accrued_amount} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 
 		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
@@ -195,9 +193,11 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 	}
 
 	const { id, amount } = req.body;
+	const { id: adminId } = req.user as { id: string };
 
 	try {
 		const exists = await User.findById(id);
+		const admin = await Admin.findById(adminId);
 
 		if (!exists) {
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
@@ -207,6 +207,11 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 		exists.accrued_amount = Number(amount) > 0 ? new_amt : 0;
 
 		await exists.save();
+
+		const message = 
+		`Dear ${exists.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\nElsafrica!`;
+
+		await sendMessage(admin?.phoneNo || '', exists.phone1, message);
 
 		return res.status(201).send({ msg: 'Customer payment has been updated.' });
 	} catch (error) {
@@ -291,10 +296,24 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
+		const monthtlyUsers = await User
+			.find({ 
+				last_payment: {
+					$gte: moment(`01/${new Date().getMonth() + 1}/${new Date().getFullYear()}`, 'DD/MM/YYYY').subtract(35, 'days').toISOString(),
+					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
+				},
+			});
+
+		const allUsers = await User
+			.find({});
+
+		const totalEarnings = allUsers.reduce((prev, next) => prev + (Number(next.total_earnings) || 0), 0);
+		const monthlyEarnings = monthtlyUsers.reduce((prev, next) => prev + (Number(next.bill?.amount) || 0), 0);
+
 		const userCount = await User
 			.countDocuments();
 
-		return res.status(200).send({ users, dataLength: userCount });
+		return res.status(200).send({ users, dataLength: userCount, totalEarnings, monthlyEarnings });
 	} catch (error) {
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
