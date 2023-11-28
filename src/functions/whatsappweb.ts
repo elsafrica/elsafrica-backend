@@ -17,6 +17,7 @@ export const initializeCilent = async (phoneNo: string, socketID: string) => {
 		}
 	});
 
+	console.log(phoneNo, socketID);
 	client.on('qr', (qr) => {
 		sendQRCode(socketID, qr);
 	});
