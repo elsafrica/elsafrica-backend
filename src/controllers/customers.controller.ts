@@ -299,8 +299,8 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 		const monthtlyUsers = await User
 			.find({ 
 				last_payment: {
-					$gte: moment(`01/${new Date().getMonth() + 1}/${new Date().getFullYear()}`, 'DD/MM/YYYY').subtract(35, 'days').toISOString(),
-					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
+					$gte: moment(`01/${new Date().getMonth() + 1}/${new Date().getFullYear()}`, 'DD/MM/YYYY').toISOString(),
+					$lte: moment(new Date()).toISOString(),
 				},
 			});
 
