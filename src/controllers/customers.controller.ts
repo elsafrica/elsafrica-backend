@@ -157,7 +157,7 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 		await user.save();
 
 		const message = 
-		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\n\nElsafrica!`;
+		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill.\nFor any inquiries, call: 0712748039.\n\nElsafrica!`;
 
 		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
@@ -317,7 +317,10 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 		const users = await User
 			.find({ userType: 'customer' })
 			.skip(Number(pageNum) * Number(rowsPerPage))
-			.limit(Number(rowsPerPage));
+			.limit(Number(rowsPerPage))
+			.sort({
+				last_payment: 'desc'
+			});
 
 		const monthtlyUsers = await User
 			.find({ 
