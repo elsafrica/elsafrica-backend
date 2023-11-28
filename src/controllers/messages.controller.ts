@@ -22,7 +22,7 @@ export async function requestCilentInit(req: Request, res: Response): Promise<un
 
 		res.status(200).send({ msg: 'Awaiting client initialization, please wait for a QR code to scan.' });
 
-		await initializeCilent(admin.phoneNo || '', admin.socketID || '');
+		await initializeCilent(admin.phoneNo?.substring(1).trim() || '', admin.socketID || '');
 	} catch (error) {
 		console.log(error);
 		return res.status(500).send({ err: 'Error: An internal server error has occured or a WhatsApp client has not been initialized. Please wait and refresh the page after sometime.' });
