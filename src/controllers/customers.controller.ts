@@ -49,6 +49,7 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 
 	try {
 		const userBill = await Package.findOne({ name: bill });
+		const admin = await Admin.findOne({ email: 'elsafricaltd@gmail.com '});
 
 		if(bill?.toLowerCase() === 'custom') {
 			newUser.bill = {
@@ -70,6 +71,13 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 		newUser.isDisconnected = false;
 
 		await newUser.save();
+
+		if(admin) {
+			const message = 
+			`Dear ${newUser.name},\n\nWelcome to Elsafrica Networks! Get ready for a turbocharged internet experience. Blazing speed, unwavering reliability, and 24/7 support – your connectivity journey starts now!\n\n#ElsafricaConnects!`;
+	
+			await sendMessage(admin.phoneNo || '', newUser.phone1, message);
+		}
 
 		return res.status(201).send({ msg: 'User has been successfully created.' });
 	} catch (error) {
@@ -126,7 +134,7 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { id } = req.body;
+	const { id, isSuspended } = req.body;
 	const { id: adminID } = req.user as { id: string };
 
 	try {
@@ -139,6 +147,12 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 
 		const new_amt = Number(user.total_earnings) + (Number(user.bill?.amount.replace(',', '')) || 0);
 		user.total_earnings = new_amt;
+
+		if(isSuspended) {
+			user.last_payment = new Date();
+		} else {
+			user.last_payment = moment(user.last_payment).add(1, 'month').toDate();
+		}
 
 		await user.save();
 
@@ -226,9 +240,11 @@ export async function activate(req: Request, res: Response): Promise<unknown> {
 	}
 
 	const { id, deactivate } = req.body;
+	const { id: adminId } = req.user as { id: string };
 
 	try {
 		const exists = await User.findById(id);
+		const admin = await Admin.findById(adminId);
 
 		if (!exists) {
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
@@ -237,6 +253,13 @@ export async function activate(req: Request, res: Response): Promise<unknown> {
 		exists.isDisconnected = deactivate;
 
 		await exists.save();
+
+		if (deactivate) {
+			const message = 
+			`Dear ${exists.name},\n\nYour internet bill is long overdue and the service has been suspended. Please make payment to continue enjoying the service. For any questions, call 0712748039.\nThank You,\nElsafrica!`;
+
+			await sendMessage(admin?.phoneNo || '', exists.phone1, message);
+		}
 
 		return res.status(201).send({ msg: `Customer using IP: ${exists.ip} has been ${exists.isDisconnected ? 'deactivated': 'activated'} successfully` });
 	} catch (error) {
