@@ -10,6 +10,7 @@ const {
 	SMTP_SENDER,
 	SMTP_USERNAME,
 	SMTP_PASSWORD,
+	CLIENT_URL
 } = process.env;
 
 export const settings = <Settings>{
@@ -20,4 +21,5 @@ export const settings = <Settings>{
 	SMTP_SENDER,
 	SMTP_USERNAME,
 	SMTP_PASSWORD,
+	CLIENT_URL,
 };

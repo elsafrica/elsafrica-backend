@@ -1,9 +1,10 @@
 export interface Settings {
-	database: string,
+	database: string;
 	secret: string
-	PORT: string,
-	SMTP_HOST: string,
-	SMTP_SENDER: string,
-	SMTP_PASSWORD: string,
-	SMTP_USERNAME: string,
+	PORT: string;
+	SMTP_HOST: string;
+	SMTP_SENDER: string;
+	SMTP_PASSWORD: string;
+	SMTP_USERNAME: string;
+	CLIENT_URL: string;
 }

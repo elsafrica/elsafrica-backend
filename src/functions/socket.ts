@@ -1,9 +1,11 @@
 import { Server } from 'socket.io';
 import { Admin as User } from '../models/Admin';
+import { settings } from '../config/config';
 
 const io = new Server({
 	cors: {
-		origin: '*'
+		origin: settings.CLIENT_URL,
+		methods: ['GET', 'POST']
 	}
 });
 
