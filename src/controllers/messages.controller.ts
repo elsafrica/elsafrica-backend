@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { initializeCilent, sendMessage } from '../functions/whatsappweb';
+import { broadcast, initializeCilent, sendMessage } from '../functions/whatsappweb';
 import { Admin } from '../models/Admin';
 import { User } from '../models/User';
 import { validationResult } from 'express-validator';
@@ -63,11 +63,69 @@ export async function sendMessageToClient(req: Request, res: Response): Promise<
 			return res.status(404).send({ msg: 'User not found or send a valid user id' });
 		}
 
-		await sendMessage(admin.phoneNo || '', user.phone1, message(status || '', user));
+		const data = await sendMessage(admin.phoneNo || '', user.phone1, message(status || '', user));
+		const msg = data.isRegistered && !data.messageSent ?
+			'Message has not been sent to the user please try again' :
+			data.isRegistered && data.messageSent ?
+				`Success! Your message has been sent to ${data.receipientPhone}.` :
+				'The message has not been sent because the user is not registered on WhatsApp.';
 
-		res.status(200).send({ msg: 'Message has been sent successfully.' });
+		res.status(200).send({ msg });
+	} catch (error) {
+		if(error && typeof error === 'object' && 'message' in error)
+			return res.status(500).send({ err: 'Error: An internal server error has occured', errMsg: error.message });
+	}
+}
+
+export async function sendTestMessage(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { id } = req.user as { id: string };
+
+	try {
+		const admin = await Admin.findById(id);
+		
+		if (!admin) {
+			return res.status(404).send({ msg: 'User doesn\'t exist on this server' });
+		}
+
+		const message = 'This is a simple test message';
+
+		await sendMessage(admin.phoneNo || '', admin.phoneNo || '+254712748039', message);
+
+		res.status(200).send({ msg: 'Test message has been sent successfully.' });
 	} catch (error) {
 		if(error && typeof error === 'object' && 'message' in error)
 			return res.status(500).send({ err: 'Error: An internal server error has occured', errMsg: error?.message });
+	}
+}
+
+export async function broadCastMessage(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { id } = req.user as { id: string };
+	const { message } = req.body;
+
+	try {
+		const admin = await Admin.findById(id);
+		const users = await User.find({});
+		
+		if (!admin) {
+			return res.status(404).send({ msg: 'User doesn\'t exist on this server' });
+		}
+
+		const userPhones = users.map((user) => user.phone1);
+		const data = await broadcast(admin.phoneNo || '', userPhones, message);
+
+		res.status(200).send({ msg: 'Operation successfull', data });
+	} catch (error) {
+		if(error && typeof error === 'object' && 'message' in error)
+			return res.status(500).send({ err: 'Error: An internal server error has occured', errMsg: error.message });
 	}
 }
