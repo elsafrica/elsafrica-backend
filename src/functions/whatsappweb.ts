@@ -37,7 +37,7 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 	messageSent?: boolean,
 	error?: string,
 }> => {
-	const client = clientSessionStore[senderPhone];
+	const client = clientSessionStore[senderPhone.substring(1).trim()];
 
 	if (!client?.info?.wid) {
 		throw new Error('Client is not initialized. Please navigate to the Whatsapp page, scan the QR after a successfull scan return to this page and send the message again.');
