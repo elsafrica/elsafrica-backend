@@ -13,6 +13,10 @@ const AdminSchema = new Schema({
 	phoneNo: String,
 	password: String,
 	socketID: String,
+	resetToken: {
+		value: String,
+		expiresAt: Number,
+	},
 	userType: {
 		type: String,
 		enum: ['user', 'super'],
