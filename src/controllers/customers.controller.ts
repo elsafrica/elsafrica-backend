@@ -49,7 +49,7 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 
 	try {
 		const userBill = await Package.findOne({ name: bill });
-		const admin = await Admin.findOne({ email: 'elsafricaltd@gmail.com '});
+		const admin = await Admin.findOne({ email: 'elsafricaltd@gmail.com' });
 
 		if(bill?.toLowerCase() === 'custom') {
 			newUser.bill = {
