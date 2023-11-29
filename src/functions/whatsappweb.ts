@@ -70,6 +70,54 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 	};
 };
 
+export const broadcast = async (senderPhone: string, receipientPhones: string[], payload: string) : Promise<Array<{
+	receipientPhone?: string,
+	isRegistered?: boolean,
+	messageSent?: boolean,
+	error?: string,
+}>> => {
+	const client = clientSessionStore[senderPhone.substring(1).trim()];
+
+	if (!client?.info?.wid) {
+		throw new Error('Client is not initialized. Please navigate to the Whatsapp page, scan the QR after a successfull scan return to this page and send the message again.');
+	}
+
+	const registeredNumbers = receipientPhones.map(async(receipientPhone: string) : Promise<{
+		receipientPhone?: string,
+		isRegistered?: boolean,
+		messageSent?: boolean,
+		error?: string,
+	}> => {
+		const formatedNumber = `${receipientPhone.trim().substring(1)}@c.us`;
+		const isRegistered = await client.isRegisteredUser(formatedNumber);
+		if (isRegistered) {
+			try {
+				await client.sendMessage(formatedNumber, payload);
+	
+				return {
+					receipientPhone,
+					isRegistered,
+					messageSent: true,
+				};
+			} catch (error) {
+				return {
+					receipientPhone,
+					isRegistered,
+					messageSent: false,
+				};
+			}
+		}
+
+		return {
+			isRegistered
+		};
+	});
+
+	const data = await Promise.all(registeredNumbers);
+	
+	return data;
+};
+
 export const deleteClient = (senderPhone: string,) : void => {
 	delete clientSessionStore[senderPhone];
 };
