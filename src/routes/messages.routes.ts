@@ -20,4 +20,18 @@ router.post(
 	controllers.sendMessageToClient,
 );
 
+router.get(
+	'/send_test_message',
+	passport.authenticate('jwt', { session: false }),
+	controllers.sendTestMessage,
+);
+
+router.post(
+	'/broadcast_message',
+	body('message')
+		.notEmpty(),
+	passport.authenticate('jwt', { session: false }),
+	controllers.broadCastMessage,
+);
+
 export default router;
