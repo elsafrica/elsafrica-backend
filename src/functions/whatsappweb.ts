@@ -43,7 +43,7 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 		throw new Error('Client is not initialized. Please navigate to the Whatsapp page, scan the QR after a successfull scan return to this page and send the message again.');
 	}
 
-	const formatedNumber = `${receipientPhone.trim().substring(1)}@c.us`;
+	const formatedNumber = `${receipientPhone.substring(1).replace(/ /g, '')}@c.us`;
 	
 	const isRegistered = await client.isRegisteredUser(formatedNumber);
 
@@ -76,7 +76,7 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 	messageSent?: boolean,
 	error?: string,
 }>> => {
-	const client = clientSessionStore[senderPhone.substring(1).trim()];
+	const client = clientSessionStore[senderPhone.substring(1).replace(/ /g, '')];
 
 	if (!client?.info?.wid) {
 		throw new Error('Client is not initialized. Please navigate to the Whatsapp page, scan the QR after a successfull scan return to this page and send the message again.');
@@ -88,7 +88,7 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 		messageSent?: boolean,
 		error?: string,
 	}> => {
-		const formatedNumber = `${receipientPhone.trim().substring(1)}@c.us`;
+		const formatedNumber = `${receipientPhone.substring(1).replace(/ /g, '')}@c.us`;
 		const isRegistered = await client.isRegisteredUser(formatedNumber);
 		if (isRegistered) {
 			try {
