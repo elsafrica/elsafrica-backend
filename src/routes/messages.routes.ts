@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import * as controllers from '../controllers/messages.controller';
 import { body } from 'express-validator';
+import { multimediaUpload } from '../middlewares/multer';
 
 const router = Router();
 
@@ -28,6 +29,7 @@ router.get(
 
 router.post(
 	'/broadcast_message',
+	multimediaUpload.single('file'),
 	body('message')
 		.notEmpty(),
 	passport.authenticate('jwt', { session: false }),
