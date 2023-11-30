@@ -1,9 +1,9 @@
 import { FileFilterCallback } from 'multer';
 import path from 'path';
 
-export function checkFileType(file: Express.Multer.File, cb: FileFilterCallback){
+export function checkFileType(file: Express.Multer.File, cb: FileFilterCallback, filetypes: RegExp){
 	// Allowed ext
-	const filetypes = /csv/;
+	// const filetypes = /csv/;
 	// Check ext
 	const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 	// Check mime
