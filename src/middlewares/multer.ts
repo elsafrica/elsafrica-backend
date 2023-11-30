@@ -19,9 +19,21 @@ const storage = diskStorage({
 	
 });
 
+const multimediaStorage = multer.memoryStorage();
+
+export const multimediaUpload = multer({
+	storage: multimediaStorage,
+	fileFilter(req, file, callback) {
+		checkFileType(file, callback, /(jpg|jpeg|webp|png)/);
+	},
+	limits: {
+		fileSize: 5000000,
+	}
+});
+
 export const csvUploads = multer({ 
 	storage,
 	fileFilter(req, file, callback) {
-		checkFileType(file, callback);
+		checkFileType(file, callback, /csv/);
 	},
 });
