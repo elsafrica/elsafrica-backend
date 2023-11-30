@@ -32,17 +32,7 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { firstName, lastName, email, package: bill, customAmount } = req.body;
-
-	try {
-		const exists = await User.findOne({ email });
-
-		if (exists) {
-			return res.status(409).send({ err: `A user named ${firstName} ${lastName} has already been created using the email ${email}.` });
-		}
-	} catch (error) {
-		return res.status(500).send({ err: 'Error: An internal server error has occured' });
-	}
+	const { firstName, lastName, package: bill, customAmount, } = req.body;
 
 	const newUser = new User(req.body);
 	newUser.name = toUpcaseFirstLetter(firstName) + ' ' + toUpcaseFirstLetter(lastName);
@@ -311,11 +301,17 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { pageNum = 0, rowsPerPage = 10 } = req.query;
+	const { pageNum = 0, rowsPerPage = 10, searchValue } = req.query;
+	const regex = searchValue && typeof searchValue === 'string' ? new RegExp(searchValue) : '';
 
 	try {
 		const users = await User
-			.find({ userType: 'customer' })
+			.find({
+				name: {
+					$regex: regex,
+					$options: 'i'
+				}
+			})
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage))
 			.sort({
