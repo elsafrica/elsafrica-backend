@@ -1,4 +1,4 @@
-import { Client, LocalAuth } from 'whatsapp-web.js';
+import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import { sendQRCode } from './socket';
 interface ClientsMap {
 	[clientId: string]: Client;
@@ -70,7 +70,7 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 	};
 };
 
-export const broadcast = async (senderPhone: string, receipientPhones: string[], payload: string) : Promise<Array<{
+export const broadcast = async (senderPhone: string, receipientPhones: string[], payload: string, options?: WAWebJS.MessageSendOptions) : Promise<Array<{
 	receipientPhone?: string,
 	isRegistered?: boolean,
 	messageSent?: boolean,
@@ -92,7 +92,7 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 		const isRegistered = await client.isRegisteredUser(formatedNumber);
 		if (isRegistered) {
 			try {
-				await client.sendMessage(formatedNumber, payload);
+				await client.sendMessage(formatedNumber, payload, options);
 	
 				return {
 					receipientPhone,
