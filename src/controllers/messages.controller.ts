@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { validationResult } from 'express-validator';
 import { User as TypeUser } from '../types/user';
 import moment from 'moment';
+import { MessageMedia } from 'whatsapp-web.js';
 
 export async function requestCilentInit(req: Request, res: Response): Promise<unknown> {
 	const { id } = req.user as { id: string };
@@ -111,6 +112,7 @@ export async function broadCastMessage(req: Request, res: Response): Promise<unk
 
 	const { id } = req.user as { id: string };
 	const { message } = req.body;
+	const file = req.file;
 
 	try {
 		const admin = await Admin.findById(id);
@@ -120,8 +122,12 @@ export async function broadCastMessage(req: Request, res: Response): Promise<unk
 			return res.status(404).send({ msg: 'User doesn\'t exist on this server' });
 		}
 
+		const messageMedia = file && new MessageMedia(file?.mimetype, file?.buffer.toString('base64'), file?.originalname);
+		const finalMessage = file ? messageMedia : message;
+		const options = file && { caption: message };
+
 		const userPhones = users.map((user) => user.phone1);
-		const data = await broadcast(admin.phoneNo || '', userPhones, message);
+		const data = await broadcast(admin.phoneNo || '', userPhones, finalMessage, options);
 
 		res.status(200).send({ msg: 'Operation successfull', data });
 	} catch (error) {
