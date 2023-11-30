@@ -9,6 +9,7 @@ import fs from 'fs';
 import moment from 'moment';
 import { Admin } from '../models/Admin';
 import { sendMessage } from '../functions/whatsappweb';
+import { MonthlyEarnings } from '../models/MonthlyEarnings';
 
 type Result = {
 	'Customer Name': string,
@@ -130,6 +131,10 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 	try {
 		const user = await User.findById(id);
 		const admin = await Admin.findById(adminID);
+		const monthSlug = `${moment().month()}-${moment().year()}`;
+		const month = await MonthlyEarnings.findOne({
+			slug: monthSlug
+		});
 
 		if (!user) {
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
@@ -137,6 +142,19 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 
 		const new_amt = Number(user.total_earnings) + (Number(user.bill?.amount.replace(',', '')) || 0);
 		user.total_earnings = new_amt;
+
+		if(month) {
+			month.amount = month.amount + (Number(user.bill?.amount.replace(',', '')) || 0);
+			await month.save();
+		} else {
+			const month = new MonthlyEarnings({
+				slug: monthSlug,
+				monthName: moment().format('MMMM'),
+				amount: (Number(user.bill?.amount.replace(',', '')) || 0)
+			});
+
+			await month.save();
+		}
 
 		if(isSuspended) {
 			user.last_payment = new Date();
@@ -200,22 +218,39 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 	const { id: adminId } = req.user as { id: string };
 
 	try {
-		const exists = await User.findById(id);
+		const user = await User.findById(id);
 		const admin = await Admin.findById(adminId);
+		const monthSlug = `${moment().month()}-${moment().year()}`;
+		const month = await MonthlyEarnings.findOne({
+			slug: monthSlug
+		});
 
-		if (!exists) {
+		if (!user) {
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
 		}
 
-		const new_amt = Number(exists.accrued_amount) - Number(amount);
-		exists.accrued_amount = Number(amount) > 0 ? new_amt : 0;
+		const new_amt = Number(user.accrued_amount) - Number(amount);
+		user.accrued_amount = Number(amount) > 0 ? new_amt : 0;
 
-		await exists.save();
+		if(month) {
+			month.amount = month.amount + (Number(user.bill?.amount.replace(',', '')) || 0);
+			await month.save();
+		} else {
+			const month = new MonthlyEarnings({
+				slug: monthSlug,
+				monthName: moment().format('MMMM'),
+				amount: (Number(user.bill?.amount.replace(',', '')) || 0)
+			});
+
+			await month.save();
+		}
+
+		await user.save();
 
 		const message = 
-		`Dear ${exists.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\nElsafrica!`;
+		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\nElsafrica!`;
 
-		await sendMessage(admin?.phoneNo || '', exists.phone1, message);
+		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
 		return res.status(201).send({ msg: 'Customer payment has been updated.' });
 	} catch (error) {
@@ -318,19 +353,13 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 				last_payment: 'desc'
 			});
 
-		const monthtlyUsers = await User
-			.find({ 
-				last_payment: {
-					$gte: moment(`01/${new Date().getMonth() + 1}/${new Date().getFullYear()}`, 'DD/MM/YYYY').toISOString(),
-					$lte: moment(new Date()).toISOString(),
-				},
-			});
+		const monthSlug = `${moment().month()}-${moment().year()}`;
+		const monthlyEarnings = (await MonthlyEarnings.findOne({ slug: monthSlug }))?.amount;
 
 		const allUsers = await User
 			.find({});
 
 		const totalEarnings = allUsers.reduce((prev, next) => prev + (Number(next.total_earnings) || 0), 0);
-		const monthlyEarnings = monthtlyUsers.reduce((prev, next) => prev + (Number(next.bill?.amount) || 0), 0);
 
 		const userCount = await User
 			.countDocuments();
