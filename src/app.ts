@@ -4,6 +4,8 @@ import passport from 'passport';
 import routes from './routes/index';
 import { passportStatic } from './middlewares/auth';
 import './db';
+import schedule from './functions/schedule';
+schedule();
 passportStatic(passport);
 
 const app = express();
