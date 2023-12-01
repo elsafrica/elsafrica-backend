@@ -9,11 +9,16 @@ export async function getDue(req: Request, res: Response): Promise<unknown> {
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { pageNum = 0, rowsPerPage = 10 } = req.query;
+	const { pageNum = 0, rowsPerPage = 10, searchValue } = req.query;
+	const regex = searchValue && typeof searchValue === 'string' ? new RegExp(searchValue) : '';
 
 	try {
 		const users = await User
-			.find({ 
+			.find({
+				name: {
+					$regex: regex,
+					$options: 'i'
+				},
 				last_payment: {
 					$lte: moment(new Date()).subtract(30, 'days').toISOString(),
 					$gte: moment(new Date()).subtract(35, 'days').toISOString()
@@ -24,7 +29,11 @@ export async function getDue(req: Request, res: Response): Promise<unknown> {
 			.limit(Number(rowsPerPage));
 
 		const userCount = await User
-			.countDocuments({ 
+			.countDocuments({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
 				last_payment: {
 					$lte: moment(new Date()).subtract(30, 'days').toISOString(),
 					$gte: moment(new Date()).subtract(35, 'days').toISOString()
@@ -44,11 +53,16 @@ export async function getOverdue(req: Request, res: Response): Promise<unknown> 
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { pageNum = 0, rowsPerPage = 10 } = req.query;
+	const { pageNum = 0, rowsPerPage = 10, searchValue } = req.query;
+	const regex = searchValue && typeof searchValue === 'string' ? new RegExp(searchValue) : '';
  
 	try {
 		const users = await User
-			.find({ 
+			.find({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
 				last_payment: {
 					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
 				},
@@ -58,7 +72,11 @@ export async function getOverdue(req: Request, res: Response): Promise<unknown> 
 			.limit(Number(rowsPerPage));
 
 		const userCount = await User
-			.countDocuments({ 
+			.countDocuments({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
 				last_payment: {
 					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
 				},
@@ -77,16 +95,29 @@ export async function getSuspended(req: Request, res: Response): Promise<unknown
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { pageNum = 0, rowsPerPage = 10 } = req.query;
+	const { pageNum = 0, rowsPerPage = 10, searchValue } = req.query;
+	const regex = searchValue && typeof searchValue === 'string' ? new RegExp(searchValue) : '';
  
 	try {
 		const users = await User
-			.find({ isDisconnected: true })
+			.find({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
+				isDisconnected: true
+			})
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
 		const userCount = await User
-			.countDocuments({ isDisconnected: true });
+			.countDocuments({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
+				isDisconnected: true
+			});
 
 		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
@@ -100,20 +131,33 @@ export async function getAccrued(req: Request, res: Response): Promise<unknown> 
 		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
 	}
 
-	const { pageNum = 0, rowsPerPage = 10 } = req.query;
- 
+	const { pageNum = 0, rowsPerPage = 10, searchValue } = req.query;
+	const regex = searchValue && typeof searchValue === 'string' ? new RegExp(searchValue) : '';
+
 	try {
 		const users = await User
-			.find({ accrued_amount: {
-				$gt: 0
-			} })
+			.find({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
+				accrued_amount: {
+					$gt: 0
+				}
+			})
 			.skip(Number(pageNum) * Number(rowsPerPage))
 			.limit(Number(rowsPerPage));
 
 		const userCount = await User
-			.countDocuments({ accrued_amount: {
-				$gt: 0
-			} });
+			.countDocuments({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
+				accrued_amount: {
+					$gt: 0
+				}
+			});
 
 		return res.status(201).send({ users, dataLength: userCount });
 	} catch (error) {
