@@ -36,4 +36,13 @@ router.post(
 	controllers.broadCastMessage,
 );
 
+router.post(
+	'/broadcast_status_message',
+	multimediaUpload.single('file'),
+	body('status')
+		.notEmpty(),
+	passport.authenticate('jwt', { session: false }),
+	controllers.broadcastMessageToClient,
+);
+
 export default router;
