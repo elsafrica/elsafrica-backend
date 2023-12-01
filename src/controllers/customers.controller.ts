@@ -364,7 +364,12 @@ export async function getCustomers(req: Request, res: Response): Promise<unknown
 		const totalEarnings = allUsers.reduce((prev, next) => prev + (Number(next.total_earnings) || 0), 0);
 
 		const userCount = await User
-			.countDocuments();
+			.countDocuments({
+				name: {
+					$regex: regex,
+					$options: 'i',
+				},
+			});
 
 		return res.status(200).send({ users, dataLength: userCount, totalEarnings, monthlyEarnings });
 	} catch (error) {
