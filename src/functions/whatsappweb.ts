@@ -1,5 +1,5 @@
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import { sendQRCode } from './socket';
+import { sendClientConnected, sendQRCode } from './socket';
 interface ClientsMap {
 	[clientId: string]: Client;
 }
@@ -17,16 +17,14 @@ export const initializeCilent = async (phoneNo: string, socketID: string) => {
 		}
 	});
 
-	console.log(phoneNo, socketID);
-	client.on('qr', (qr) => {
-		sendQRCode(socketID, qr);
-	});
+	client.on('qr', (qr) => sendQRCode(socketID, qr));
+
+	client.on('ready', () => sendClientConnected(socketID));
 
 	try {
 		await client.initialize();
 		clientSessionStore[phoneNo] = client;
 	} catch (error) {
-		console.log(error);
 		throw new Error(JSON.stringify(error));
 	}
 };
@@ -102,6 +100,54 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 			} catch (error) {
 				return {
 					receipientPhone,
+					isRegistered,
+					messageSent: false,
+				};
+			}
+		}
+
+		return {
+			isRegistered
+		};
+	});
+
+	const data = await Promise.all(registeredNumbers);
+	
+	return data;
+};
+
+export const broadcastStatusMessage = async (senderPhone: string, receipientData: { phone: string, message: string }[], options?: WAWebJS.MessageSendOptions) : Promise<Array<{
+	receipientPhone?: string,
+	isRegistered?: boolean,
+	messageSent?: boolean,
+	error?: string,
+}>> => {
+	const client = clientSessionStore[senderPhone.substring(1).replace(/ /g, '')];
+
+	if (!client?.info?.wid) {
+		throw new Error('Client is not initialized. Please navigate to the Whatsapp page, scan the QR after a successfull scan return to this page and send the message again.');
+	}
+
+	const registeredNumbers = receipientData.map(async(receipient: { message: string, phone: string }) : Promise<{
+		receipientPhone?: string,
+		isRegistered?: boolean,
+		messageSent?: boolean,
+		error?: string,
+	}> => {
+		const formatedNumber = `${receipient.phone.substring(1).replace(/ /g, '')}@c.us`;
+		const isRegistered = await client.isRegisteredUser(formatedNumber);
+		if (isRegistered) {
+			try {
+				await client.sendMessage(formatedNumber, receipient.message, options);
+	
+				return {
+					receipientPhone: receipient.phone,
+					isRegistered,
+					messageSent: true,
+				};
+			} catch (error) {
+				return {
+					receipientPhone: receipient.phone,
 					isRegistered,
 					messageSent: false,
 				};
