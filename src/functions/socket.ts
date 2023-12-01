@@ -30,6 +30,12 @@ export const sendQRCode = async (userSocketID: string, qrCode: string) => {
 	});
 };
 
+export const sendClientConnected = async (userSocketID: string) => {
+	io.to(userSocketID).emit('wa_client_connected', {
+		connected: 'connected',
+	});
+};
+
 io.on('connection', (socket) => {
 	socket.on('update_user', async (userId) => {
 		await updateUserSocketId(userId, socket.id);
