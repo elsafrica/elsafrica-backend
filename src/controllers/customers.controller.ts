@@ -233,7 +233,9 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 		user.accrued_amount = Number(amount) > 0 ? new_amt : 0;
 
 		if(month) {
-			month.amount = month.amount + (Number(user.bill?.amount.replace(',', '')) || 0);
+			month.amount =  Number(amount) > 0 ? 
+				month.amount + Number(amount) :
+				month.amount + (Number(user.bill?.amount.replace(',', '')) || 0);
 			await month.save();
 		} else {
 			const month = new MonthlyEarnings({
