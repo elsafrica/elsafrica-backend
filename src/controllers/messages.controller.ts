@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { broadcast, initializeCilent, sendMessage } from '../functions/whatsappweb';
+import { broadcast, broadcastStatusMessage, initializeCilent, sendMessage } from '../functions/whatsappweb';
 import { Admin } from '../models/Admin';
 import { User } from '../models/User';
 import { validationResult } from 'express-validator';
@@ -72,6 +72,74 @@ export async function sendMessageToClient(req: Request, res: Response): Promise<
 				'The message has not been sent because the user is not registered on WhatsApp.';
 
 		res.status(200).send({ msg });
+	} catch (error) {
+		if(error && typeof error === 'object' && 'message' in error)
+			return res.status(500).send({ err: 'Error: An internal server error has occured', errMsg: error.message });
+	}
+}
+
+export async function broadcastMessageToClient(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if(!result.isEmpty()) {
+		return res.status(400).send({ err: 'Bad request, please send valid data to server.', errors: result.array() });
+	}
+
+	const { id } = req.user as { id: string };
+	const { status } = req.body;
+
+	const message = (status: string, user: TypeUser) : string => {
+		switch (status) {
+		case 'due':
+			return `Dear ${user.name},\n\nWe appreciate your continued trust in Elsafrica Networks for your internet needs. Your internet bill is due today.\n\n*Plan*: ${user.bill?.package}\n*Amount*: ${user.bill?.amount}\n*M-Pesa Paybill Number*: 247247\n*Account Number*: 0712748039\n*Due*: ${moment(user.last_payment).add(30, 'days').format('MMM Do YYYY')}\n\nPlease ensure timely payment to enjoy uninterrupted services.\nCall: 0712748039 for support.\n\nElsafrica!`;
+		case 'overdue':
+			return `Dear ${user.name},\n\nWe appreciate your continued trust in Elsafrica Networks for your internet needs. This is a kind reminder that your internet bill is overdue.\n\n*Plan*: ${user.bill?.package}\n*Amount*: ${user.bill?.amount}\n*M-Pesa Paybill Number*: 247247\n*Account Number*: 0712748039\n*Due*: ${moment(user.last_payment).add(30, 'days').format('MMM Do YYYY')}\nPlease ensure timely payment to enjoy uninterrupted services.\nCall: 0712748039 for support.\n\nElsafrica!`;
+		case 'accrued':
+			return `Dear ${user.name},\n\nYour outstanding balance of ${user.accrued_amount} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
+		default:
+			return '';
+		}
+	};
+
+	const query = (status: string) => {
+		switch (status) {
+		case 'due':
+			return {
+				last_payment: {
+					$lte: moment(new Date()).subtract(30, 'days').toISOString(),
+					$gte: moment(new Date()).subtract(35, 'days').toISOString()
+				},
+				isDisconnected: false,
+			};
+		case 'overdue':
+			return {
+				last_payment: {
+					$lte: moment(new Date()).subtract(35, 'days').toISOString(),
+				},
+				isDisconnected: false,
+			};
+		case 'accrued':
+			return {
+				accrued_amount: {
+					$gt: 0
+				}
+			};
+		default:
+			return {};
+		}
+	};
+
+	try {
+		const admin = await Admin.findById(id);
+		const users = await User.find(query(status));
+		
+		if (!admin) {
+			return res.status(404).send({ msg: 'User doesn\'t exist on this server' });
+		}
+
+		const messageMetadata: { message: string, phone: string }[] = users.map((user: TypeUser) => ({ phone: user.phone1 || '', message: message(status, user )}));
+		const data = await broadcastStatusMessage(admin.phoneNo || '', messageMetadata);
+
+		res.status(200).send({ msg: 'Operation successfull.', data });
 	} catch (error) {
 		if(error && typeof error === 'object' && 'message' in error)
 			return res.status(500).send({ err: 'Error: An internal server error has occured', errMsg: error.message });
