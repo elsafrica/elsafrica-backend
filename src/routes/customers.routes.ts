@@ -18,6 +18,7 @@ router.post(
 		])
 			.notEmpty(),
 		body('email')
+			.if(body('email'))
 			.isEmail(),
 		body('ip')
 			.notEmpty()

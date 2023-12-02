@@ -41,6 +41,10 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 	try {
 		const userBill = await Package.findOne({ name: bill });
 		const admin = await Admin.findOne({ email: 'elsafricaltd@gmail.com' });
+		const monthSlug = `${moment().month()}-${moment().year()}`;
+		const month = await MonthlyEarnings.findOne({
+			slug: monthSlug
+		});
 
 		if(bill?.toLowerCase() === 'custom') {
 			newUser.bill = {
@@ -56,6 +60,19 @@ export async function create(req: Request, res: Response): Promise<unknown> {
 			};
 
 			newUser.total_earnings = Number(userBill?.amount);
+		}
+
+		if(month) {
+			month.amount = month.amount + (Number(newUser.bill?.amount.replace(',', '')) || 0);
+			await month.save();
+		} else {
+			const month = new MonthlyEarnings({
+				slug: monthSlug,
+				monthName: moment().format('MMMM'),
+				amount: (Number(newUser.bill?.amount.replace(',', '')) || 0)
+			});
+
+			await month.save();
 		}
 
 		newUser.last_payment = new Date();
