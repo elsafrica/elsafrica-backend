@@ -175,6 +175,7 @@ export async function acceptPayment(req: Request, res: Response): Promise<unknow
 
 		if(isSuspended) {
 			user.last_payment = new Date();
+			user.isDisconnected = false;
 		} else {
 			user.last_payment = moment(user.last_payment).add(30, 'days').toDate();
 		}
