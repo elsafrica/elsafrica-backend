@@ -247,18 +247,19 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 			return res.status(409).send({ err: 'The customer you are trying to update doesn\'t exist' });
 		}
 
+		const prevAccAmount = Number(user.accrued_amount);
 		const new_amt = Number(user.accrued_amount) - Number(amount);
 		user.accrued_amount = Number(amount) > 0 ? new_amt : 0;
 
 		if(month) {
 			month.amount =  Number(amount) > 0 ? 
 				month.amount + Number(amount) :
-				month.amount + (Number(user.accrued_amount) || 0);
+				month.amount + prevAccAmount;
 			await month.save();
 		} else {
 			const monthAmount = Number(amount) > 0 ? 
 				Number(amount) :
-				(Number(user.accrued_amount) || 0);
+				prevAccAmount;
 			const month = new MonthlyEarnings({
 				slug: monthSlug,
 				monthName: moment().format('MMMM'),
