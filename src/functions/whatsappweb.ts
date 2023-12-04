@@ -43,10 +43,10 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 
 	const formatedNumber = `${receipientPhone.substring(1).replace(/ /g, '')}@c.us`;
 	
-	const isRegistered = await client.isRegisteredUser(formatedNumber);
+	try {
+		const isRegistered = await client.isRegisteredUser(formatedNumber);
 
-	if (isRegistered) {
-		try {
+		if (isRegistered) {
 			await client.sendMessage(formatedNumber, payload);
 
 			return {
@@ -54,18 +54,18 @@ export const sendMessage = async (senderPhone: string, receipientPhone: string, 
 				isRegistered,
 				messageSent: true,
 			};
-		} catch (error) {
+		} else {
 			return {
-				receipientPhone,
 				isRegistered,
-				messageSent: false,
 			};
 		}
+	} catch (error) {
+		return {
+			receipientPhone,
+			isRegistered: false,
+			messageSent: false,
+		};
 	}
-	
-	return {
-		isRegistered,
-	};
 };
 
 export const broadcast = async (senderPhone: string, receipientPhones: string[], payload: string, options?: WAWebJS.MessageSendOptions) : Promise<Array<{
@@ -87,9 +87,9 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 		error?: string,
 	}> => {
 		const formatedNumber = `${receipientPhone.substring(1).replace(/ /g, '')}@c.us`;
-		const isRegistered = await client.isRegisteredUser(formatedNumber);
-		if (isRegistered) {
-			try {
+		try {
+			const isRegistered = await client.isRegisteredUser(formatedNumber);
+			if (isRegistered) {
 				await client.sendMessage(formatedNumber, payload, options);
 	
 				return {
@@ -97,18 +97,18 @@ export const broadcast = async (senderPhone: string, receipientPhones: string[],
 					isRegistered,
 					messageSent: true,
 				};
-			} catch (error) {
+			} else {
 				return {
-					receipientPhone,
-					isRegistered,
-					messageSent: false,
+					isRegistered: false,
 				};
 			}
+		} catch (error) {
+			return {
+				receipientPhone,
+				isRegistered: false,
+				messageSent: false,
+			};
 		}
-
-		return {
-			isRegistered
-		};
 	});
 
 	const data = await Promise.all(registeredNumbers);
@@ -135,9 +135,9 @@ export const broadcastStatusMessage = async (senderPhone: string, receipientData
 		error?: string,
 	}> => {
 		const formatedNumber = `${receipient.phone.substring(1).replace(/ /g, '')}@c.us`;
-		const isRegistered = await client.isRegisteredUser(formatedNumber);
-		if (isRegistered) {
-			try {
+		try {
+			const isRegistered = await client.isRegisteredUser(formatedNumber);
+			if (isRegistered) {
 				await client.sendMessage(formatedNumber, receipient.message, options);
 	
 				return {
@@ -145,18 +145,18 @@ export const broadcastStatusMessage = async (senderPhone: string, receipientData
 					isRegistered,
 					messageSent: true,
 				};
-			} catch (error) {
+			} else {
 				return {
-					receipientPhone: receipient.phone,
 					isRegistered,
-					messageSent: false,
 				};
 			}
+		} catch (error) {
+			return {
+				receipientPhone: receipient.phone,
+				isRegistered: false,
+				messageSent: false,
+			};
 		}
-
-		return {
-			isRegistered
-		};
 	});
 
 	const data = await Promise.all(registeredNumbers);
