@@ -10,6 +10,7 @@ import moment from 'moment';
 import { Admin } from '../models/Admin';
 import { sendMessage } from '../functions/whatsappweb';
 import { MonthlyEarnings } from '../models/MonthlyEarnings';
+import { currencyFormater } from '../utils/formatters';
 
 type Result = {
 	'Customer Name': string,
@@ -216,7 +217,7 @@ export async function accruePayment(req: Request, res: Response): Promise<unknow
 
 		await user.save();
 
-		const message = `Dear ${user.name},\n\nYour outstanding balance of ${user.accrued_amount} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
+		const message = `Dear ${user.name},\n\nYour outstanding balance of ${currencyFormater(user.accrued_amount)} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 
 		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
