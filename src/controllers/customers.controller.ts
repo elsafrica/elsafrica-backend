@@ -271,7 +271,7 @@ export async function deductAccruedDebt(req: Request, res: Response): Promise<un
 		await user.save();
 
 		const message = 
-		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill. Your continued support is appreciated.\nFor any inquiries, call: 0712748039.\nElsafrica!`;
+		`Dear ${user.name},\n\nPayment received! Thank you for settling your internet bill.\nFor any inquiries, call: 0712748039.\n\nElsafrica!`;
 
 		await sendMessage(admin?.phoneNo || '', user.phone1, message);
 
