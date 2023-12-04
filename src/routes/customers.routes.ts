@@ -43,6 +43,7 @@ router.patch(
 		])
 			.notEmpty(),
 		body('email')
+			.if(body('email').trim().not().equals(''))
 			.isEmail(),
 		body('ip')
 			.notEmpty()
