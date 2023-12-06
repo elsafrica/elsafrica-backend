@@ -22,7 +22,7 @@ router.post(
 			.isEmail(),
 		body('ip')
 			.notEmpty()
-			.custom((value: string) => /^(\.\d\d\d$)|(\.\d\d$)/.test(value)),
+			.custom((value: string) => /^(\.\d\d\d$)|(\.\d\d$)|(\.\d$)/.test(value)),
 		body('customAmount')
 			.if(body('package').toLowerCase().equals('custom'))
 			.notEmpty()
@@ -47,7 +47,7 @@ router.patch(
 			.isEmail(),
 		body('ip')
 			.notEmpty()
-			.custom((value: string) => /^(\.\d\d\d$)|(\.\d\d$)/.test(value)),
+			.custom((value: string) => /^(\.\d\d\d$)|(\.\d\d$)|(\.\d$)/.test(value)),
 		body('customAmount')
 			.if(body('package').toLowerCase().equals('custom'))
 			.notEmpty()
