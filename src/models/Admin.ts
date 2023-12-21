@@ -15,6 +15,7 @@ const AdminSchema = new Schema({
 	socketID: String,
 	resetToken: String,
 	tokenExpiresAt: Date,
+	isActivated: Boolean,
 	userType: {
 		type: String,
 		enum: ['user', 'super'],
