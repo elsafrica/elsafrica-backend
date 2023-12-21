@@ -22,7 +22,10 @@ const routes = [{
 },{
 	route: '/assets',
 	path: 'assets.routes'
-},];
+},{
+	route: '/users',
+	path: 'admin.routes'
+}];
 
 // For each path in the `routes` array, set up the URI and require the route
 for (const route of routes) {
