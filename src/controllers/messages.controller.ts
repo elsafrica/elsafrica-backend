@@ -51,7 +51,7 @@ export async function sendMessageToClient(req: Request, res: Response): Promise<
 		case 'accrued':
 			return `Dear ${user.name},\n\nYour outstanding balance of ${currencyFormater(user.accrued_amount || 0)} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 		case 'suspended':
-			return `Dear ${user.name},\n\nYour internet bill is long overdue and the service has been suspended. Please make payment to continue enjoying the service. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
+			return `Dear ${user.name},\n\nYour internet bill of ${currencyFormater(Number(user.bill?.amount.replace(',', '')))} is long overdue and the service has been suspended. Please make payment to continue enjoying the service. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 		default:
 			return '';
 		}
@@ -103,7 +103,7 @@ export async function broadcastMessageToClient(req: Request, res: Response): Pro
 		case 'accrued':
 			return `Dear ${user.name},\n\nYour outstanding balance of ${currencyFormater(user.accrued_amount || 0)} is long overdue. Please settle to avoid service interruption. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 		case 'suspended':
-			return `Dear ${user.name},\n\nYour internet bill is long overdue and the service has been suspended. Please make payment to continue enjoying the service. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
+			return `Dear ${user.name},\n\nYour internet bill of ${currencyFormater(Number(user.bill?.amount.replace(',', '')))} is long overdue and the service has been suspended. Please make payment to continue enjoying the service. For any questions, call 0712748039.\n\nThank you.\nElsafrica!`;
 		default:
 			return '';
 		}
