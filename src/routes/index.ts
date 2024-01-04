@@ -25,6 +25,9 @@ const routes = [{
 },{
 	route: '/users',
 	path: 'admin.routes'
+},{
+	route: '/invoice',
+	path: 'invoice.routes'
 }];
 
 // For each path in the `routes` array, set up the URI and require the route
