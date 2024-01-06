@@ -2,7 +2,6 @@ import { Router } from 'express';
 import passport from 'passport';
 import * as controllers from '../controllers/invoice.controller';
 import { body, query, param } from 'express-validator';
-import moment from 'moment';
 
 const router = Router();
 
@@ -18,8 +17,7 @@ router.post(
 			'date',
 			'dueDate'
 		])
-			.notEmpty()
-			.customSanitizer((value: string) => moment(value, 'DD/MM/YY').toISOString()),
+			.notEmpty(),
 		body('items')
 			.notEmpty()
 			.isArray({ min: 1 }),
