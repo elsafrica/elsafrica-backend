@@ -93,3 +93,31 @@ export async function getInvoices(req: Request, res: Response): Promise<unknown>
 		return res.status(500).send({ err: 'Error: An internal server error has occured' });
 	}
 }
+
+export async function deleteInvoice(req: Request, res: Response): Promise<unknown> {
+	const result = validationResult(req);
+	if (!result.isEmpty()) {
+		return res.status(400).send({ err: 'Error: Bad request', errors: result.array() });
+	}
+
+	const { id } = req.params;
+
+	if (!id || id?.trim() == '') {
+		return res.status(400).send({ err: 'Error: Bad request' });
+	}
+
+	try {
+		const exists = await Invoice.findById(id);
+
+		if (!exists) {
+			return res.status(409).send({ err: 'The invoice you are attempting to delete doesn\'t exist.' });
+		}
+
+		await Invoice.findByIdAndDelete(id);
+
+		return res.status(201).send({ msg: 'invoice has been successfully deleted.' });
+	} catch (error) {
+		return res.status(500).send({ err: 'Error: An internal server error has occured' });
+	}
+}
+
