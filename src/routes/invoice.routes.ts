@@ -55,4 +55,13 @@ router.get(
 	controllers.downloadInvoice
 );
 
+router.delete(
+	'/delete/:id',
+	param('id')
+		.notEmpty()
+		.isMongoId(),
+	passport.authenticate('jwt', { session: false }),
+	controllers.deleteInvoice
+);
+
 export default router;
