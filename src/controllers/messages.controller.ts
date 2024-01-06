@@ -176,7 +176,7 @@ export async function sendTestMessage(req: Request, res: Response): Promise<unkn
 
 		const message = 'This is a simple test message';
 
-		await sendMessage(admin.phoneNo || '', admin.phoneNo || '+254712748039', message);
+		await sendMessage(admin.phoneNo || '', admin.phoneNo || '+254115878009', message);
 
 		res.status(200).send({ msg: 'Test message has been sent successfully.' });
 	} catch (error) {
