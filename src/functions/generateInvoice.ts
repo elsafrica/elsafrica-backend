@@ -78,7 +78,7 @@ export async function generateInvoice(invoice: Invoice, res: Response) {
 	doc.fillColor('#000').fontSize(11).text(currencyFormater(invoice?.discount || 0), 460, (245 + totalsHeightOffset));
 
 	doc.fontSize(11).text('Tax :', 380, (270 + totalsHeightOffset));
-	doc.fontSize(11).text(currencyFormater(invoice?.tax || 0), 460, (270 + totalsHeightOffset));
+	doc.fontSize(11).text(currencyFormater(taxTotal * subtotal || 0), 460, (270 + totalsHeightOffset));
 
 	doc.fontSize(11).text('Shipping :', 380, (295 + totalsHeightOffset));
 	doc.fontSize(11).text(currencyFormater(invoice?.shipping || 0), 460, (295 + totalsHeightOffset));
