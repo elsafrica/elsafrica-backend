@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import { currencyFormater } from '../utils/formatters';
 import { Response } from 'express';
+import moment from 'moment';
 
 type Invoice = {
 	number?: string,
@@ -38,10 +39,10 @@ export async function generateInvoice(invoice: Invoice, res: Response) {
 	doc.fontSize(11).text(invoice?.number || '', 455, 70);
 
 	doc.fontSize(11).text('Date Created :', 390, 95);
-	doc.fontSize(11).text(invoice?.date || '', 465, 95);
+	doc.fontSize(11).text(moment(invoice?.date).format('DD/MM/YY') || '', 465, 95);
 
 	doc.fontSize(11).text('Date Due :', 390, 120);
-	doc.fontSize(11).text(invoice?.date || '', 445, 120);
+	doc.fontSize(11).text(moment(invoice?.dueDate).format('DD/MM/YY') || '', 445, 120);
 
 	//Details header start
 	doc.fontSize(11).text('Item', 25, 180);
@@ -84,13 +85,14 @@ export async function generateInvoice(invoice: Invoice, res: Response) {
 
 	doc.moveTo(380, (320 + totalsHeightOffset)).lineTo(540, (320 + totalsHeightOffset)).stroke();
 
-	doc.fontSize(13).text('Grand Total :', 380, (340 + totalsHeightOffset));
-	doc.fontSize(13).text(currencyFormater(grandtotal), 460, (340 + totalsHeightOffset));
+	doc.fontSize(12).text('Grand Total :', 380, (340 + totalsHeightOffset));
+	doc.fontSize(11).text(currencyFormater(grandtotal), 455, (340 + totalsHeightOffset));
 	//Totals end
 
 	//Footer start
-	doc.fontSize(8).text(`Notes: ${invoice?.notes}`, 40, (doc.y + 200), { align: 'center' }).moveDown();
-	doc.fontSize(8).text(`Terms and Conditions: ${invoice.terms}`, { align: 'center' });
+	if (invoice?.notes) doc.fontSize(8).text(`Notes: ${invoice?.notes}`, 40, (doc.y + 200), { align: 'center' }).moveDown();
+
+	if (invoice?.terms) doc.fontSize(8).text(`Terms and Conditions: ${invoice.terms}`, { align: 'center' });
 	//Footer end
 
 	doc.end();
